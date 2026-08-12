@@ -1,0 +1,6 @@
+{
+  "name": "Tamil Nadu Weather Forecast",
+  "description": "Comprehensive hourly and 5-day weather forecasting, interactive Tamil Nadu map, real-time alerts via Email and SMS, and animated weather visuals.",
+  "requestFramePermissions": ["geolocation", "notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
