@@ -1,4 +1,4 @@
-import { CityInfo } from '../types';
+import { CityInfo, TNRegion } from '../types';
 
 export const TAMIL_NADU_CITIES: CityInfo[] = [
   {

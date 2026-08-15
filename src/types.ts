@@ -1,3 +1,5 @@
+export type AppLanguage = 'en' | 'ta';
+
 export type WeatherCondition =
   | 'Clear'
   | 'Partly Cloudy'

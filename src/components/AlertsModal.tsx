@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Bell, Mail, Phone, Clock, Plus, Trash2, Send, CheckCircle2, ShieldAlert, Sparkles, Smartphone } from 'lucide-react';
-import { WeatherAlertRule, CityInfo } from '../types';
+import { WeatherAlertRule, CityInfo, AppLanguage } from '../types';
 import { TAMIL_NADU_CITIES } from '../data/cities';
 
 interface AlertsModalProps {
@@ -10,6 +10,7 @@ interface AlertsModalProps {
   onAddAlert: (newAlert: Omit<WeatherAlertRule, 'id' | 'createdAt' | 'active'>) => Promise<void>;
   onDeleteAlert: (id: string) => Promise<void>;
   isDarkMode: boolean;
+  lang?: AppLanguage;
 }
 
 export const AlertsModal: React.FC<AlertsModalProps> = ({
@@ -19,6 +20,7 @@ export const AlertsModal: React.FC<AlertsModalProps> = ({
   onAddAlert,
   onDeleteAlert,
   isDarkMode,
+  lang = 'en',
 }) => {
   const [selectedCityId, setSelectedCityId] = useState<string>('chennai');
   const [recipientEmail, setRecipientEmail] = useState<string>('manthra.vijayan@tigeranalytics.com');
@@ -141,7 +143,7 @@ export const AlertsModal: React.FC<AlertsModalProps> = ({
               >
                 {TAMIL_NADU_CITIES.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({c.tamilName})
+                    {lang === 'ta' ? `${c.tamilName} (${c.name})` : `${c.name} (${c.district} District)`}
                   </option>
                 ))}
               </select>
