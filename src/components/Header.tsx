@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Search, MapPin, Moon, Sun, Bell, Compass, Check, ChevronDown, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, MapPin, Moon, Sun, Bell, Compass, Check, ChevronDown, Globe, Loader2 } from 'lucide-react';
 import { CityInfo, AppLanguage } from '../types';
 import { TAMIL_NADU_CITIES, REGIONS } from '../data/cities';
 import { TRANSLATIONS, REGION_TRANSLATIONS } from '../utils/translations';
+import { searchOpenMeteoGeocoding } from '../services/weatherService';
 
 interface HeaderProps {
   selectedCity: CityInfo;
@@ -32,18 +33,56 @@ export const Header: React.FC<HeaderProps> = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
   const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('All');
+  const [searchResults, setSearchResults] = useState<CityInfo[]>(TAMIL_NADU_CITIES);
+  const [isSearchingGeocode, setIsSearchingGeocode] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const t = TRANSLATIONS[lang];
 
-  const filteredCities = TAMIL_NADU_CITIES.filter((city) => {
-    const matchesSearch =
-      city.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      city.tamilName.includes(searchTerm) ||
-      city.district.toLowerCase().includes(searchTerm.toLowerCase());
+  // Fast local + Open-Meteo geocoding search handler
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setSearchResults(
+        selectedRegionFilter === 'All'
+          ? TAMIL_NADU_CITIES
+          : TAMIL_NADU_CITIES.filter((c) => c.region === selectedRegionFilter)
+      );
+      setIsSearchingGeocode(false);
+      return;
+    }
 
-    const matchesRegion = selectedRegionFilter === 'All' || city.region === selectedRegionFilter;
-    return matchesSearch && matchesRegion;
-  });
+    const trimmed = searchTerm.trim().toLowerCase();
+    const localFiltered = TAMIL_NADU_CITIES.filter((city) => {
+      const matchesSearch =
+        city.name.toLowerCase().includes(trimmed) ||
+        city.tamilName.includes(trimmed) ||
+        city.district.toLowerCase().includes(trimmed);
+
+      const matchesRegion = selectedRegionFilter === 'All' || city.region === selectedRegionFilter;
+      return matchesSearch && matchesRegion;
+    });
+
+    setSearchResults(localFiltered);
+
+    // If search term length >= 3, trigger Open-Meteo geocoding for broader location coverage
+    if (trimmed.length >= 3) {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      setIsSearchingGeocode(true);
+
+      searchTimeoutRef.current = setTimeout(async () => {
+        try {
+          const remoteResults = await searchOpenMeteoGeocoding(searchTerm);
+          if (remoteResults.length > 0) {
+            setSearchResults(remoteResults);
+          }
+        } catch (_err) {
+          // fallback to local
+        } finally {
+          setIsSearchingGeocode(false);
+        }
+      }, 350);
+    }
+  }, [searchTerm, selectedRegionFilter]);
 
   return (
     <header className={`sticky top-0 z-40 border-b backdrop-blur-md transition-colors ${
@@ -139,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* City Selection & Search Bar (GPS option removed) */}
+        {/* City Selection & Open-Meteo Search Bar */}
         <div className="relative w-full md:max-w-md">
           <div className="relative w-full">
             <button
@@ -156,26 +195,31 @@ export const Header: React.FC<HeaderProps> = ({
                   {lang === 'ta' ? `${selectedCity.tamilName} (${selectedCity.name})` : selectedCity.name}
                 </span>
                 <span className="text-xs text-slate-500 truncate">
-                  {lang === 'ta' ? `[${selectedCity.district}]` : `• ${selectedCity.district} District`}
+                  {lang === 'ta' ? `[${selectedCity.district}]` : `• ${selectedCity.district}`}
                 </span>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-1" />
             </button>
 
-            {/* City Dropdown Modal */}
+            {/* City Dropdown Search Modal */}
             {isDropdownOpen && (
               <div className={`absolute left-0 right-0 top-full mt-2 rounded-2xl border shadow-xl z-50 p-3 max-h-96 overflow-y-auto ${
                 isDarkMode ? 'bg-slate-900 border-slate-800 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
               }`}>
                 {/* Search Input */}
                 <div className="relative mb-3">
-                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                  {isSearchingGeocode ? (
+                    <Loader2 className="w-4 h-4 absolute left-3 top-2.5 text-sky-500 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                  )}
                   <input
                     type="text"
                     placeholder={t.searchPlaceholder}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className={`w-full pl-9 pr-3 py-1.5 rounded-xl text-xs border focus:outline-none focus:ring-2 focus:ring-sky-500 ${
+                    autoFocus
+                    className={`w-full pl-9 pr-3 py-2 rounded-xl text-xs border focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                       isDarkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-slate-100 border-slate-200 text-slate-900'
                     }`}
                   />
@@ -208,9 +252,9 @@ export const Header: React.FC<HeaderProps> = ({
                   ))}
                 </div>
 
-                {/* Filtered Cities List */}
+                {/* Search Results List */}
                 <div className="space-y-1">
-                  {filteredCities.map((city) => (
+                  {searchResults.map((city) => (
                     <button
                       key={city.id}
                       onClick={() => {
@@ -246,11 +290,11 @@ export const Header: React.FC<HeaderProps> = ({
                     </button>
                   ))}
 
-                  {filteredCities.length === 0 && (
+                  {searchResults.length === 0 && !isSearchingGeocode && (
                     <p className="text-center py-4 text-xs text-slate-500">
                       {lang === 'ta'
                         ? `"${searchTerm}" பொருந்திய மாவட்டம் அல்லது நகரம் எதுவும் இல்லை`
-                        : `No Tamil Nadu city matches "${searchTerm}"`}
+                        : `No city matches "${searchTerm}"`}
                     </p>
                   )}
                 </div>
@@ -261,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Action Controls & Top Right Language Dropdown */}
         <div className="hidden md:flex items-center gap-2.5">
-          {/* Language Switcher Dropdown (Requirement 5) */}
+          {/* Language Switcher Dropdown */}
           <div className="relative">
             <button
               onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}

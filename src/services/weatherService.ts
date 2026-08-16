@@ -1,4 +1,5 @@
-import { CityInfo, CurrentWeather, DailyForecast, HourlyForecast, WeatherCondition } from '../types';
+import { CityInfo, CurrentWeather, DailyForecast, HourlyForecast, WeatherCondition, TNRegion } from '../types';
+import { TAMIL_NADU_CITIES } from '../data/cities';
 
 // WMO Weather Code Interpreter
 function interpretWmoCode(code: number, isDay: boolean = true): { condition: WeatherCondition; icon: string } {
@@ -90,7 +91,6 @@ function generateRealisticFallback(city: CityInfo): CurrentWeather {
     });
   }
 
-  const daysList = ['Today', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const daily: DailyForecast[] = [];
   for (let d = 0; d < 7; d++) {
     const dDate = new Date(now.getTime() + d * 86400 * 1000);
@@ -117,8 +117,8 @@ function generateRealisticFallback(city: CityInfo): CurrentWeather {
       sunriseTime: '06:08 AM',
       sunsetTime: '06:34 PM',
       summary: dCond.includes('Rain')
-        ? 'Intermittent light rain showers expected with pleasant breeze.'
-        : 'Partly cloudy skies with moderate sun during daytime.',
+        ? 'Intermittent rain showers expected with moderate coastal breeze.'
+        : 'Partly cloudy skies with comfortable temperature throughout the day.',
       alertWarning: dRainProb > 80 ? 'Heavy Rainfall Alert' : undefined,
     });
   }
@@ -147,9 +147,76 @@ function generateRealisticFallback(city: CityInfo): CurrentWeather {
     rainfall24hMm: 2.4,
     hourly,
     daily,
-    aiAdvisory: `Tamil Nadu Regional Advisory: ${city.name} experiencing ${condition.toLowerCase()} with temperatures around ${tempC}°C. Good conditions for local travel; keep umbrellas handy for light monsoon drizzles.`,
+    aiAdvisory: `Regional Forecast: ${city.name} is experiencing ${condition.toLowerCase()} with temperatures near ${tempC}°C.`,
     aiAdvisoryTamil: `${city.name} வானிலை: தற்போதைய வெப்பநிலை ${tempC}°C. ${condition} நிலவுகிறது.`,
   };
+}
+
+export async function searchOpenMeteoGeocoding(query: string): Promise<CityInfo[]> {
+  if (!query || query.trim().length < 2) return [];
+
+  const trimmed = query.trim().toLowerCase();
+  
+  // First match local Tamil Nadu database for instant response & Tamil names
+  const localMatches = TAMIL_NADU_CITIES.filter((c) =>
+    c.name.toLowerCase().includes(trimmed) ||
+    c.tamilName.includes(trimmed) ||
+    c.district.toLowerCase().includes(trimmed)
+  );
+
+  try {
+    const res = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query.trim())}&count=6&language=en&format=json`
+    );
+    if (!res.ok) return localMatches;
+    const data = await res.json();
+
+    if (!data.results || !Array.isArray(data.results)) {
+      return localMatches;
+    }
+
+    const openMeteoResults: CityInfo[] = data.results.map((r: any) => {
+      // Check if matches an existing TN city to preserve rich metadata
+      const existing = TAMIL_NADU_CITIES.find(
+        (c) => c.name.toLowerCase() === r.name.toLowerCase() || c.id === r.name.toLowerCase()
+      );
+      if (existing) return existing;
+
+      const isIndia = r.country_code === 'IN';
+      const districtName = r.admin2 || r.admin1 || (isIndia ? 'Tamil Nadu' : r.country || 'Region');
+
+      let region: TNRegion = 'Northern TN';
+      if (r.latitude < 10) region = 'Southern TN';
+      else if (r.longitude < 77.5) region = 'Western Plains';
+      else if (r.longitude > 79.5) region = 'Coastal TN';
+
+      return {
+        id: `custom-${r.id || r.name.toLowerCase().replace(/\s+/g, '-')}`,
+        name: r.name,
+        tamilName: r.name,
+        district: districtName,
+        region: region,
+        lat: Number(r.latitude.toFixed(4)),
+        lng: Number(r.longitude.toFixed(4)),
+        elevationMeters: Math.round(r.elevation || 15),
+        description: `${r.name}, ${r.admin1 || ''} ${r.country || ''}`,
+        popularFor: 'Weather Station',
+      };
+    });
+
+    // Merge without duplicates
+    const combined = [...localMatches];
+    for (const item of openMeteoResults) {
+      if (!combined.some((c) => c.name.toLowerCase() === item.name.toLowerCase())) {
+        combined.push(item);
+      }
+    }
+
+    return combined;
+  } catch (err) {
+    console.warn('Geocoding search failed, returning local matches:', err);
+    return localMatches;
+  }
 }
 
 export async function fetchWeatherForCity(city: CityInfo): Promise<CurrentWeather> {
@@ -166,7 +233,7 @@ export async function fetchWeatherForCity(city: CityInfo): Promise<CurrentWeathe
     const isDay = curr.is_day === 1;
     const { condition, icon } = interpretWmoCode(curr.weather_code, isDay);
     
-    // Hourly formatting
+    // Hourly formatting (24 hours)
     const hourlyTimes: string[] = data.hourly.time;
     const hourlyTemps: number[] = data.hourly.temperature_2m;
     const hourlyRainProbs: number[] = data.hourly.precipitation_probability;
@@ -202,7 +269,7 @@ export async function fetchWeatherForCity(city: CityInfo): Promise<CurrentWeathe
       });
     }
 
-    // Daily formatting
+    // Daily formatting (Full 7 Days)
     const dailyTimes: string[] = data.daily.time;
     const dailyMax: number[] = data.daily.temperature_2m_max;
     const dailyMin: number[] = data.daily.temperature_2m_min;
@@ -239,7 +306,7 @@ export async function fetchWeatherForCity(city: CityInfo): Promise<CurrentWeathe
         sunriseTime: sr,
         sunsetTime: ss,
         summary: dCond.condition.includes('Rain')
-          ? 'Expect rain showers during the day. Wind speeds up to ' + Math.round(dailyWind[d]) + ' km/h.'
+          ? 'Expect rain showers during the day with wind speeds up to ' + Math.round(dailyWind[d]) + ' km/h.'
           : 'Clear to partly cloudy skies with comfortable temperature.',
         alertWarning: (dailyRainProb[d] || 0) > 75 ? 'Heavy Rain Warning' : undefined,
       });
@@ -271,11 +338,11 @@ export async function fetchWeatherForCity(city: CityInfo): Promise<CurrentWeathe
       rainfall24hMm: Math.round((curr.precipitation || 0) * 10) / 10,
       hourly: hourlySlice,
       daily: dailySlice,
-      aiAdvisory: `Live Weather for ${city.name}, Tamil Nadu: Currently ${Math.round(curr.temperature_2m)}°C with ${condition}. Humidity is ${curr.relative_humidity_2m}%.`,
+      aiAdvisory: `Live Weather for ${city.name}: Currently ${Math.round(curr.temperature_2m)}°C with ${condition}. Humidity is ${curr.relative_humidity_2m}%.`,
       aiAdvisoryTamil: `${city.name} தற்போதைய வெப்பநிலை ${Math.round(curr.temperature_2m)}°C. ${condition} நிலவுகிறது.`,
     };
   } catch (err) {
-    console.warn(`Live weather fetch failed for ${city.name}, using high-precision fallback:`, err);
+    console.warn(`Live weather fetch failed for ${city.name}, using fallback:`, err);
     return generateRealisticFallback(city);
   }
 }

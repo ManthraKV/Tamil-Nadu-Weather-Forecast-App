@@ -7,7 +7,7 @@ export const TRANSLATIONS = {
     appTitle: 'Tamil Nadu Weather',
     appSubtitle: 'Tamil Nadu State Meteorological Service',
     stateTag: 'TN State',
-    searchPlaceholder: 'Search TN City or District...',
+    searchPlaceholder: 'Search any city, district, or town...',
     allTN: 'All Districts',
     gps: 'GPS',
     weatherAlerts: 'Weather Alerts',
@@ -23,8 +23,8 @@ export const TRANSLATIONS = {
     westTamil: 'மேற்கு',
     sunrise: 'Sunrise',
     sunset: 'Sunset',
-    dawnSubtitle: 'Dawn • Morning Sun Horizon',
-    duskSubtitle: 'Dusk • Evening Twilight Horizon',
+    dawnSubtitle: 'Dawn • Morning Ocean Horizon',
+    duskSubtitle: 'Dusk • Evening Ocean Horizon',
     solarPosition: 'Solar Position',
     daylightRemaining: 'Daylight Track',
 
@@ -48,13 +48,22 @@ export const TRANSLATIONS = {
     wind: 'Wind',
     now: 'Now',
 
-    // 5-Day Dashboard
-    dashboardTitle: '5-Day & 7-Day Weather Dashboard',
-    dashboardSubtitle: 'Extended Tamil Nadu Outlook',
+    // 7-Day Forecast Dashboard
+    dashboardTitle: '7-Day Weather Forecast',
+    dashboardSubtitle: 'Extended 7-day outlook powered by Open-Meteo',
     precipitation: 'Precipitation',
     uvMax: 'UV Max',
     today: 'Today',
     tomorrow: 'Tomorrow',
+
+    // Planning Recommendations
+    planningTitle: 'Smart Day & Travel Planning Recommendations',
+    planningSubtitle: 'Actionable guidance based on live temperature, precipitation & UV conditions',
+    outdoorFitness: 'Outdoor & Exercise',
+    travelCommute: 'Travel & Commute',
+    clothingCare: 'Clothing & UV Protection',
+    coastalFarming: 'Farming & Coastal Advisory',
+    bestTimeOut: 'Ideal Outdoor Window',
 
     // Regional Map
     mapTitle: 'Tamil Nadu Regional Map',
@@ -71,10 +80,11 @@ export const TRANSLATIONS = {
     cool: 'Cool',
     warm: 'Warm',
     hot: 'Hot',
+    selectedStationLegend: 'Selected District / Active Station Tracking',
 
     // Footer
     footerTitle: 'Tamil Nadu State Meteorological Service',
-    footerSubtitle: 'Providing hourly forecasts, weather advisories, and SMS/Email alerts across all 38 districts of Tamil Nadu.',
+    footerSubtitle: 'Providing hourly forecasts, 7-day outlooks, weather advisories, and SMS/Email alerts across all 38 districts of Tamil Nadu.',
     footerShare: 'Public Shareable URL & Deploy Guide',
     footerAlerts: 'SMS / Email Alerts Setup',
   },
@@ -82,7 +92,7 @@ export const TRANSLATIONS = {
     appTitle: 'தமிழ்நாடு வானிலை',
     appSubtitle: 'தமிழ்நாடு மாநில வானிலை மையம்',
     stateTag: 'தமிழகம்',
-    searchPlaceholder: 'நகரம், தமிழ் பெயர் அல்லது மாவட்டம் தேடுக...',
+    searchPlaceholder: 'நகரம் அல்லது மாவட்டம் தேடுக...',
     allTN: 'அனைத்து மாவட்டங்கள்',
     gps: 'ஜிபிஎஸ்',
     weatherAlerts: 'வானிலை எச்சரிக்கைகள்',
@@ -98,8 +108,8 @@ export const TRANSLATIONS = {
     westTamil: 'WEST',
     sunrise: 'சூரிய உதயம்',
     sunset: 'சூரிய அஸ்தமனம்',
-    dawnSubtitle: 'விடியற்காலை • உதய சூரியன்',
-    duskSubtitle: 'அந்தி மாலை • மறைவு சூரியன்',
+    dawnSubtitle: 'விடியற்காலை • உதய கடல் தொடுவானம்',
+    duskSubtitle: 'அந்தி மாலை • மறைவு கடல் தொடுவானம்',
     solarPosition: 'சூரிய நிலை',
     daylightRemaining: 'பகல் வெளிச்ச பாதை',
 
@@ -123,13 +133,22 @@ export const TRANSLATIONS = {
     wind: 'காற்று',
     now: 'இப்போது',
 
-    // 5-Day Dashboard
-    dashboardTitle: '5 நாள் மற்றும் 7 நாள் வானிலை கண்ணோட்டம்',
-    dashboardSubtitle: 'நீட்டிக்கப்பட்ட தமிழக வானிலை கண்ணோட்டம்',
+    // 7-Day Forecast Dashboard
+    dashboardTitle: '7 நாள் வானிலை முன்னறிவிப்பு',
+    dashboardSubtitle: 'Open-Meteo வழங்கும் நீட்டிக்கப்பட்ட 7 நாள் முன்னறிவிப்பு',
     precipitation: 'மழைப்பொழிவு',
     uvMax: 'அதிகபட்ச UV',
     today: 'இன்று',
     tomorrow: 'நாளை',
+
+    // Planning Recommendations
+    planningTitle: 'திட்டமிடல் மற்றும் பயண வழிகாட்டுதல்கள்',
+    planningSubtitle: 'வெப்பநிலை, மழை மற்றும் UV நிலைகளின் அடிப்படையிலான நடைமுறை ஆலோசனைகள்',
+    outdoorFitness: 'வெளிப்புற உடற்பயிற்சி & நடைபயிற்சி',
+    travelCommute: 'பயணம் மற்றும் போக்குவரத்து',
+    clothingCare: 'ஆடை மற்றும் UV பாதுகாப்பு',
+    coastalFarming: 'விவசாயம் மற்றும் கடலோர ஆலோசனை',
+    bestTimeOut: 'சிறந்த வெளிப்புற நேரம்',
 
     // Regional Map
     mapTitle: 'தமிழ்நாடு பிராந்திய வரைபடம்',
@@ -146,10 +165,11 @@ export const TRANSLATIONS = {
     cool: 'குளிர்',
     warm: 'வெப்பம்',
     hot: 'அதிவெப்பம்',
+    selectedStationLegend: 'தேர்ந்தெடுக்கப்பட்ட மாவட்டம் (சுழலும் வட்டம்)',
 
     // Footer
     footerTitle: 'தமிழ்நாடு வானிலை மையம் • TN State Meteorological Service',
-    footerSubtitle: 'தமிழ்நாட்டின் 38 மாவட்டங்களுக்கும் மணிநேர முன்னறிவிப்பு, வானிலை எச்சரிக்கை மற்றும் SMS/மின்னஞ்சல் அறிவிப்புகள்.',
+    footerSubtitle: 'தமிழ்நாட்டின் 38 மாவட்டங்களுக்கும் மணிநேர முன்னறிவிப்பு, 7 நாள் முன்னறிவிப்பு, வானிலை எச்சரிக்கை மற்றும் SMS/மின்னஞ்சல் அறிவிப்புகள்.',
     footerShare: 'பகிர்வு முகவரி & வெளியீட்டு வழிகாட்டி',
     footerAlerts: 'SMS / மின்னஞ்சல் எச்சரிக்கை அமைப்பு',
   },

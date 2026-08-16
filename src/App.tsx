@@ -5,6 +5,7 @@ import { EastWestSunWidget } from './components/EastWestSunWidget';
 import { CulturalBackgroundLayer } from './components/CulturalBackgroundLayer';
 import { HourlyForecastView } from './components/HourlyForecastView';
 import { FiveDayDashboardView } from './components/FiveDayDashboardView';
+import { PlanningRecommendationsCard } from './components/PlanningRecommendationsCard';
 import { TamilNaduMap } from './components/TamilNaduMap';
 import { AlertsModal } from './components/AlertsModal';
 import { PushNotificationSettingsModal } from './components/PushNotificationSettingsModal';
@@ -189,22 +190,30 @@ export default function App() {
               {/* Middle Row: Hourly Forecast Timeline */}
               <HourlyForecastView hourly={weather.hourly} isDarkMode={isDarkMode} lang={language} />
 
-              {/* Grid Row: 5-Day Dashboard & Non-interactive Tamil Nadu Map */}
+              {/* Grid Row: 7-Day Dashboard & Non-interactive Tamil Nadu Map */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* Left Column: 5-Day & 7-Day Forecast View */}
+                {/* Left Column: 7-Day Forecast View */}
                 <div className="lg:col-span-7">
                   <FiveDayDashboardView daily={weather.daily} isDarkMode={isDarkMode} lang={language} />
                 </div>
 
-                {/* Right Column: Non-interactive Regional Tamil Nadu Map */}
+                {/* Right Column: Regional Tamil Nadu Map */}
                 <div className="lg:col-span-5">
                   <TamilNaduMap
                     selectedCity={selectedCity}
+                    onSelectCity={setSelectedCity}
                     isDarkMode={isDarkMode}
                     lang={language}
                   />
                 </div>
               </div>
+
+              {/* Smart Day & Travel Planning Recommendations */}
+              <PlanningRecommendationsCard
+                weather={weather}
+                isDarkMode={isDarkMode}
+                lang={language}
+              />
             </>
           )}
         </main>
